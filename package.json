@@ -1,0 +1,15 @@
+{
+  "name": "budget",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Donovan Richardson",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "inquirer": "^7.3.3"
+  }
+}
