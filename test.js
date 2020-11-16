@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const {Statement} = require('./models/statement')
 const {DateTime} = require('luxon')
 const dailyBudget = 12.80
-const interest = 5
+const interest = 1
 
 mongoose.connect('mongodb://localhost/budget', {
   useNewUrlParser: true,
@@ -36,10 +36,12 @@ async function addFirst(){
     const hour = await promptForNumber('What was the hour (24-hour system)?')
     const owe = await promptForNumber('What did you owe?')
     const exp = await promptForNumber('What were your expenditures?')
+    const bal = await promptForNumber('Manually calculate the balance.')
     const budg = await Statement.create({
         owe: owe,
         expend: exp,
-        date: DateTime.local(year, month, date, hour)
+        date: DateTime.local(year, month, date, hour),
+        balance: bal
     })
     console.log(budg);
 }
@@ -60,6 +62,25 @@ function getBalance(owe, expend, todayBudget, theInterest) {
       };
     }
   }
+async function getInterest(){
+    const potentialChoices = [
+        'woke up late?',
+        'going to bed late?',
+      ]
+
+    const selectedChoices = await inquirer.prompt({
+        name:'choices',
+        type:'checkbox',
+        message:'choose one',
+        choices:potentialChoices
+      })
+    
+      const misc = await promptForNumber("miscellaneous")
+
+      const addedInterest = ((selectedChoices.choices.length / potentialChoices.length) * 4) + misc
+    //   console.log(interest + addedInterest);
+      return interest + addedInterest
+}
 
 async function addBudget(date, stmt){
     console.log(`for ${date.toLocaleString(DateTime.DATE_HUGE)}`)
@@ -67,7 +88,8 @@ async function addBudget(date, stmt){
     //the pre-owe will be yesterday's owe + yesterday's expenditures - yesterday's budget
      const preOwe = stmt.owe + stmt.expend - dailyBudget;
      const newOwe = preOwe < 0 ? 0 : preOwe
-     const newBalance = getBalance(stmt.balance, exp,dailyBudget,interest)
+     const newInterest = getInterest();
+     const newBalance = getBalance(stmt.balance, exp,dailyBudget,newInterest)
      const budg = await Statement.create({
         owe: stmt.balance,
         expend: exp,
@@ -142,3 +164,4 @@ async function inq(){
 }
 
 inq()
+// console.log(getInterest())
